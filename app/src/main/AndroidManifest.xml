@@ -14,7 +14,7 @@
         android:theme="@style/Theme.MoviesForFintech"
         tools:targetApi="31">
         <activity
-            android:name=".PopularFilmsActivity"
+            android:name=".presentation.PopularFilmsActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

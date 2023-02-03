@@ -1,7 +1,8 @@
-package com.spinoza.moviesforfintech
+package com.spinoza.moviesforfintech.presentation
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.spinoza.moviesforfintech.R
 
 class PopularFilmsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
