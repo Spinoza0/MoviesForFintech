@@ -19,7 +19,7 @@ interface ApiService {
     @GET("top/{$QUERY_PATH_ID}")
     suspend fun getFilmDescription(
         @Header("X-API-KEY: $API_KEY")
-        @Path(QUERY_PATH_ID) id: String,
+        @Path(QUERY_PATH_ID) id: Int,
     ): FilmDto
 
     companion object {

@@ -9,7 +9,7 @@ data class FilmDbModel(
     @PrimaryKey
     val filmId: Int?,
     val nameRu: String? = null,
-    val year: String? = null,
+    val year: Int? = null,
     val countries: List<CountryDbModel>,
     val genres: List<GenreDbModel>,
     val posterUrl: String? = null,

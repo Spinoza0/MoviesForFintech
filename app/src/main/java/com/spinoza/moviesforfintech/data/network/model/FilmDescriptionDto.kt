@@ -4,23 +4,25 @@ import com.google.gson.annotations.SerializedName
 
 class FilmDescriptionDto {
     @SerializedName("kinopoiskId")
-    var kinopoiskId: Int? = null
+    var filmId: Int? = null
 
-//    @SerializedName("imdbId")
+    //    @SerializedName("imdbId")
 //    var imdbId: String? = null
 //
-//    @SerializedName("nameRu")
-//    var nameRu: String? = null
-//
+    @SerializedName("nameRu")
+    var nameRu: String? = null
+
+    //
 //    @SerializedName("nameEn")
 //    var nameEn: String? = null
 //
 //    @SerializedName("nameOriginal")
 //    var nameOriginal: String? = null
 //
-//    @SerializedName("posterUrl")
-//    var posterUrl: String? = null
-//
+    @SerializedName("posterUrl")
+    var posterUrl: String? = null
+
+    //
 //    @SerializedName("posterUrlPreview")
 //    var posterUrlPreview: String? = null
 //
@@ -72,9 +74,10 @@ class FilmDescriptionDto {
 //    @SerializedName("webUrl")
 //    var webUrl: String? = null
 //
-//    @SerializedName("year")
-//    var year: Int? = null
-//
+    @SerializedName("year")
+    var year: Int? = null
+
+    //
 //    @SerializedName("filmLength")
 //    var filmLength: Int? = null
 //
@@ -84,7 +87,7 @@ class FilmDescriptionDto {
     @SerializedName("description")
     var description: String? = null
 
-//    @SerializedName("shortDescription")
+    //    @SerializedName("shortDescription")
 //    var shortDescription: String? = null
 //
 //    @SerializedName("editorAnnotation")
@@ -114,11 +117,11 @@ class FilmDescriptionDto {
 //    @SerializedName("lastSync")
 //    var lastSync: String? = null
 //
-//    @SerializedName("countries")
-//    var countries: List<Country>? = null
-//
-//    @SerializedName("genres")
-//    var genres: List<Genre>? = null
+    @SerializedName("countries")
+    var countries: List<CountryDto>? = null
+
+    @SerializedName("genres")
+    var genres: List<GenreDto>? = null
 //
 //    @SerializedName("startYear")
 //    var startYear: Int? = null

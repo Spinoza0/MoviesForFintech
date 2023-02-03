@@ -13,7 +13,7 @@ data class FilmDto(
     val nameEn: String? = null,
 
     @SerializedName("year")
-    val year: String? = null,
+    val year: Int? = null,
 
     @SerializedName("filmLength")
     val filmLength: String? = null,

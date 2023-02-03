@@ -24,5 +24,5 @@ abstract class FilmsDatabase : RoomDatabase() {
         }
     }
 
-    abstract fun movieDao(): FilmsDao
+    abstract fun filmsDao(): FilmsDao
 }
