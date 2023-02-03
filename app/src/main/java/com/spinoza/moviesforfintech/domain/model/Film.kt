@@ -4,8 +4,8 @@ data class Film(
     val filmId: Int? = null,
     val nameRu: String? = null,
     val year: Int? = null,
-    val countries: List<Country>,
-    val genres: List<Genre>,
+    val countries: List<String>,
+    val genres: List<String>,
     val posterUrl: String? = null,
     val description: String? = null,
 )

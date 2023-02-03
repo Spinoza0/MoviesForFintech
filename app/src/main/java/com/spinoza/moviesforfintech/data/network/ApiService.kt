@@ -1,6 +1,6 @@
 package com.spinoza.moviesforfintech.data.network
 
-import com.spinoza.moviesforfintech.data.network.model.FilmDto
+import com.spinoza.moviesforfintech.data.network.model.FilmDescriptionDto
 import com.spinoza.moviesforfintech.data.network.model.ResponseDto
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -20,7 +20,7 @@ interface ApiService {
     suspend fun getFilmDescription(
         @Header("X-API-KEY: $API_KEY")
         @Path(QUERY_PATH_ID) id: Int,
-    ): FilmDto
+    ): FilmDescriptionDto
 
     companion object {
         private const val QUERY_PARAM_PAGE = "page"

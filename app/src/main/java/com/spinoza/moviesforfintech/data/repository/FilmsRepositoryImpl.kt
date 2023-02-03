@@ -1,5 +1,6 @@
 package com.spinoza.moviesforfintech.data.repository
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import com.spinoza.moviesforfintech.data.database.FilmsDao
 import com.spinoza.moviesforfintech.data.mapper.FilmsMapper
@@ -21,12 +22,12 @@ class FilmsRepositoryImpl @Inject constructor(
     override suspend fun loadFilmFromNetwork(filmId: Int) =
         mapper.mapDtoToEntity(apiService.getFilmDescription(filmId))
 
-    override suspend fun getAllFavouriteFilms() =
+    override suspend fun getAllFavouriteFilms(): LiveData<List<Film>> =
         Transformations.map(filmsDao.getAllFavouriteFilms()) { list ->
             list.map { mapper.mapDbModelToEntity(it) }
         }
 
-    override suspend fun getFavouriteFilm(filmId: Int) =
+    override suspend fun getFavouriteFilm(filmId: Int): LiveData<Film> =
         Transformations.map(filmsDao.getFavouriteFilm(filmId)) {
             mapper.mapDbModelToEntity(it)
         }
