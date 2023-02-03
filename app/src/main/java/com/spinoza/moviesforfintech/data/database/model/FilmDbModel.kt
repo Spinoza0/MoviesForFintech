@@ -16,5 +16,6 @@ data class FilmDbModel(
     val countries: List<String>,
     val genres: List<String>,
     val posterUrl: String? = null,
+    val posterUrlPreview: String? = null,
     val description: String? = null,
 )

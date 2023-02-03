@@ -15,6 +15,7 @@ class FilmsMapper {
         countries = film.countries,
         genres = film.genres,
         posterUrl = film.posterUrl,
+        posterUrlPreview = film.posterUrlPreview,
         description = film.description
     )
 
@@ -25,6 +26,7 @@ class FilmsMapper {
         countries = filmDbModel.countries,
         genres = filmDbModel.genres,
         posterUrl = filmDbModel.posterUrl,
+        posterUrlPreview = filmDbModel.posterUrlPreview,
         description = filmDbModel.description
     )
 
@@ -46,6 +48,7 @@ class FilmsMapper {
             countries = countries,
             genres = genres,
             posterUrl = filmDescriptionDto.posterUrl,
+            posterUrlPreview = filmDescriptionDto.posterUrlPreview,
             description = filmDescriptionDto.description
         )
     }
@@ -68,6 +71,7 @@ class FilmsMapper {
             countries = countries,
             genres = genres,
             posterUrl = filmDto.posterUrl,
+            posterUrlPreview = filmDto.posterUrlPreview,
             description = null
         )
     }

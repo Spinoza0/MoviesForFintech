@@ -22,10 +22,9 @@ class FilmDescriptionDto {
     @SerializedName("posterUrl")
     var posterUrl: String? = null
 
-    //
-//    @SerializedName("posterUrlPreview")
-//    var posterUrlPreview: String? = null
-//
+    @SerializedName("posterUrlPreview")
+    var posterUrlPreview: String? = null
+
 //    @SerializedName("coverUrl")
 //    var coverUrl: String? = null
 //
