@@ -7,4 +7,5 @@ data class Film(
     val countries: List<Country>,
     val genres: List<Genre>,
     val posterUrl: String? = null,
+    val description: String? = null,
 )

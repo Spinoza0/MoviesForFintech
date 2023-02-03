@@ -3,28 +3,26 @@ package com.spinoza.moviesforfintech.data.mapper
 import com.spinoza.moviesforfintech.data.database.model.CountryDbModel
 import com.spinoza.moviesforfintech.data.database.model.FilmDbModel
 import com.spinoza.moviesforfintech.data.database.model.GenreDbModel
-import com.spinoza.moviesforfintech.data.network.model.FilmDto
 import com.spinoza.moviesforfintech.domain.model.Country
 import com.spinoza.moviesforfintech.domain.model.Film
 import com.spinoza.moviesforfintech.domain.model.Genre
 
-class FilmMapper {
-    fun mapDtoToDbModel(filmDto: FilmDto): FilmDbModel {
+class FilmsMapper {
+    fun mapEntityToDbModel(film: Film): FilmDbModel {
         val genresDbModel = mutableListOf<GenreDbModel>()
-        filmDto.genres?.let {
-            it.forEach { genreDto -> genresDbModel.add(GenreDbModel(genreDto.genre)) }
-        }
+        film.genres.forEach { genreDto -> genresDbModel.add(GenreDbModel(genreDto.genre)) }
+
         val countriesDbModel = mutableListOf<CountryDbModel>()
-        filmDto.countries?.let {
-            it.forEach { countryDto -> countriesDbModel.add(CountryDbModel(countryDto.country)) }
-        }
+        film.countries.forEach { countryDto -> countriesDbModel.add(CountryDbModel(countryDto.country)) }
+        
         return FilmDbModel(
-            filmId = filmDto.filmId,
-            nameRu = filmDto.nameRu,
-            year = filmDto.year,
+            filmId = film.filmId,
+            nameRu = film.nameRu,
+            year = film.year,
             countries = countriesDbModel,
             genres = genresDbModel,
-            posterUrl = filmDto.posterUrl
+            posterUrl = film.posterUrl,
+            description = film.description
         )
     }
 
@@ -43,7 +41,8 @@ class FilmMapper {
             year = filmDbModel.year,
             countries = countries,
             genres = genres,
-            posterUrl = filmDbModel.posterUrl
+            posterUrl = filmDbModel.posterUrl,
+            description = filmDbModel.description
         )
     }
 }

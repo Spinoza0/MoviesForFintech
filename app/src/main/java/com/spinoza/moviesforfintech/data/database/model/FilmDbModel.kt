@@ -2,8 +2,9 @@ package com.spinoza.moviesforfintech.data.database.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.spinoza.moviesforfintech.data.database.DbConstants.Companion.FAVOURITE_TABLE
 
-@Entity(tableName = "films")
+@Entity(tableName = FAVOURITE_TABLE)
 data class FilmDbModel(
     @PrimaryKey
     val filmId: Int?,
@@ -12,4 +13,5 @@ data class FilmDbModel(
     val countries: List<CountryDbModel>,
     val genres: List<GenreDbModel>,
     val posterUrl: String? = null,
+    val description: String? = null,
 )
