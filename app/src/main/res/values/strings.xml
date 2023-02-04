@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Популярные фильмы</string>
+    <string name="popular">Популярные</string>
+    <string name="favourite">Избранное</string>
+    <string name="poster">Постер</string>
+    <string name="star">Признак нахождения в избранном</string>
+    <string name="genres">Жанры:</string>
+    <string name="countries">Страны:</string>
+    <string name="back">Вернуться назад</string>
 </resources>
