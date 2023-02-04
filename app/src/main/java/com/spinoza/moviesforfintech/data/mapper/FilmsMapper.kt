@@ -1,11 +1,11 @@
 package com.spinoza.moviesforfintech.data.mapper
 
+import com.spinoza.moviesforfintech.data.database.DbConstants
 import com.spinoza.moviesforfintech.data.database.model.FilmDbModel
-import com.spinoza.moviesforfintech.data.network.model.FilmDescriptionDto
-import com.spinoza.moviesforfintech.data.network.model.FilmDto
-import com.spinoza.moviesforfintech.data.network.model.ResponseDto
+import com.spinoza.moviesforfintech.data.network.model.*
 import com.spinoza.moviesforfintech.domain.model.Film
 import com.spinoza.moviesforfintech.domain.model.FilmResponse
+import java.util.stream.Collectors
 
 class FilmsMapper {
     fun mapEntityToDbModel(film: Film) = FilmDbModel(
@@ -30,55 +30,47 @@ class FilmsMapper {
         description = filmDbModel.description
     )
 
-    fun mapDtoToEntity(filmDescriptionDto: FilmDescriptionDto): Film {
-        val genres = mutableListOf<String>()
-        filmDescriptionDto.genres?.forEach { genreDto ->
-            genres.add(genreDto.genre ?: "")
-        }
+    fun mapDtoToEntity(filmDescriptionDto: FilmDescriptionDto) = Film(
+        filmId = filmDescriptionDto.filmId ?: 0,
+        nameRu = filmDescriptionDto.nameRu ?: "",
+        year = filmDescriptionDto.year ?: 0,
+        countries = countriesDtoToString(filmDescriptionDto.countries),
+        genres = genresDtoToString(filmDescriptionDto.genres),
+        posterUrl = filmDescriptionDto.posterUrl ?: "",
+        posterUrlPreview = filmDescriptionDto.posterUrlPreview ?: "",
+        description = filmDescriptionDto.description ?: ""
+    )
 
-        val countries = mutableListOf<String>()
-        filmDescriptionDto.countries?.forEach { countryDto ->
-            countries.add(countryDto.country ?: "")
-        }
-
-        return Film(
-            filmId = filmDescriptionDto.filmId,
-            nameRu = filmDescriptionDto.nameRu,
-            year = filmDescriptionDto.year,
-            countries = countries,
-            genres = genres,
-            posterUrl = filmDescriptionDto.posterUrl,
-            posterUrlPreview = filmDescriptionDto.posterUrlPreview,
-            description = filmDescriptionDto.description
-        )
-    }
-
-    private fun mapDtoToEntity(filmDto: FilmDto): Film {
-        val genres = mutableListOf<String>()
-        filmDto.genres?.forEach { genreDto ->
-            genres.add(genreDto.genre ?: "")
-        }
-
-        val countries = mutableListOf<String>()
-        filmDto.countries?.forEach { countryDto ->
-            countries.add(countryDto.country ?: "")
-        }
-
-        return Film(
-            filmId = filmDto.filmId,
-            nameRu = filmDto.nameRu,
-            year = filmDto.year,
-            countries = countries,
-            genres = genres,
-            posterUrl = filmDto.posterUrl,
-            posterUrlPreview = filmDto.posterUrlPreview,
-            description = null
-        )
-    }
+    private fun mapDtoToEntity(filmDto: FilmDto) = Film(
+        filmId = filmDto.filmId ?: 0,
+        nameRu = filmDto.nameRu ?: "",
+        year = filmDto.year ?: 0,
+        countries = countriesDtoToString(filmDto.countries),
+        genres = genresDtoToString(filmDto.genres),
+        posterUrl = filmDto.posterUrl ?: "",
+        posterUrlPreview = filmDto.posterUrlPreview ?: "",
+        description = ""
+    )
 
     fun mapDtoToEntity(responseDto: ResponseDto): FilmResponse {
         val films = mutableListOf<Film>()
         responseDto.films?.forEach { films.add(mapDtoToEntity(it)) }
         return FilmResponse(responseDto.pagesCount, films)
+    }
+
+    private fun genresDtoToString(genresDto: List<GenreDto>?): String {
+        val genres = mutableListOf<String>()
+        genresDto?.forEach { genres.add(it.genre ?: "") }
+        return listToString(genres)
+    }
+
+    private fun countriesDtoToString(countriesDto: List<CountryDto>?): String {
+        val countries = mutableListOf<String>()
+        countriesDto?.forEach { countries.add(it.country ?: "") }
+        return listToString(countries)
+    }
+
+    private fun listToString(list: List<String>): String {
+        return list.stream().collect(Collectors.joining(DbConstants.DELIMITER))
     }
 }
