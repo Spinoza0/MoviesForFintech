@@ -1,6 +1,5 @@
 package com.spinoza.moviesforfintech.data.database
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
@@ -11,14 +10,17 @@ import com.spinoza.moviesforfintech.data.database.model.FilmDbModel
 interface FilmsDao {
 
     @Query("SELECT * FROM $FAVOURITE_TABLE")
-    fun getAllFavouriteFilms(): LiveData<List<FilmDbModel>>
+    suspend fun getAllFavouriteFilms(): List<FilmDbModel>
 
     @Query("SELECT * FROM $FAVOURITE_TABLE WHERE filmId=:filmId")
-    fun getFavouriteFilm(filmId: Int): LiveData<FilmDbModel>
+    suspend fun getFavouriteFilm(filmId: Int): FilmDbModel
+
+    @Query("SELECT EXISTS (SELECT * FROM $FAVOURITE_TABLE WHERE filmId=:filmId)")
+    suspend fun isFilmFavourite(filmId: Int): Boolean
 
     @Insert
-    fun insertFilmToFavourite(film: FilmDbModel)
+    suspend fun insertFilmToFavourite(film: FilmDbModel)
 
     @Query("DELETE FROM $FAVOURITE_TABLE WHERE filmId=:filmId")
-    fun removeFilmFromFavourite(filmId: Int)
+    suspend fun removeFilmFromFavourite(filmId: Int)
 }
