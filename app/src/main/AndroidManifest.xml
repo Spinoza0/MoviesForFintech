@@ -14,7 +14,10 @@
         android:theme="@style/Theme.MoviesForFintech"
         tools:targetApi="31">
         <activity
-            android:name=".presentation.PopularFilmsActivity"
+            android:name=".presentation.activity.FilmDetailsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.activity.PopularFilmsActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>

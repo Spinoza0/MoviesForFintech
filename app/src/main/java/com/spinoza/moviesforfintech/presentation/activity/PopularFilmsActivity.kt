@@ -1,4 +1,4 @@
-package com.spinoza.moviesforfintech.presentation
+package com.spinoza.moviesforfintech.presentation.activity
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
