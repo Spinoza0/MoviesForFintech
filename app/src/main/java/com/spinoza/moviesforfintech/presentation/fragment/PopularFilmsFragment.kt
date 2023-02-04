@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.spinoza.moviesforfintech.R
 import com.spinoza.moviesforfintech.databinding.FragmentFilmsListBinding
 import com.spinoza.moviesforfintech.di.DaggerApplicationComponent
 import com.spinoza.moviesforfintech.domain.model.Film
@@ -52,7 +53,6 @@ class PopularFilmsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         setupScreen()
     }
 
@@ -92,7 +92,12 @@ class PopularFilmsFragment : Fragment() {
     }
 
     private fun showFileInfo(film: Film) {
-        if (!isOnePanelMode()) {
+        if (isOnePanelMode()) {
+            requireActivity().supportFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, FilmDetailsFragment.newInstance(film))
+                .addToBackStack(null)
+                .commit()
+        } else {
             binding.textViewName?.text = film.nameRu
             binding.textViewDescription?.text = film.description
         }
