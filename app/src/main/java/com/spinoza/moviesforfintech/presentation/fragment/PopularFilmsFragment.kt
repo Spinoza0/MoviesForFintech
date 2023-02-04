@@ -9,6 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.spinoza.moviesforfintech.databinding.FragmentFilmsListBinding
 import com.spinoza.moviesforfintech.di.DaggerApplicationComponent
+import com.spinoza.moviesforfintech.domain.model.Film
+import com.spinoza.moviesforfintech.domain.model.FilmResponse
 import com.spinoza.moviesforfintech.presentation.adapter.FilmsListAdapter
 import com.spinoza.moviesforfintech.presentation.viewmodel.PopularFilmsViewModel
 import com.spinoza.moviesforfintech.presentation.viewmodel.ViewModelFactory
@@ -62,11 +64,9 @@ class PopularFilmsFragment : Fragment() {
     private fun setupRecyclerView() {
         binding.recyclerViewList.adapter = filmsAdapter
         binding.recyclerViewList.itemAnimator = null
-        filmsAdapter.onFilmItemClickListener = {
-
-        }
+        filmsAdapter.onFilmItemClickListener = { viewModel.loadFullFilmData(it.filmId) }
         filmsAdapter.onFilmItemLongClickListener = { viewModel.changeFavouriteStatus(it) }
-        filmsAdapter.onReachEndListener = { viewModel.loadMovies() }
+        filmsAdapter.onReachEndListener = { viewModel.loadFilms() }
     }
 
     private fun setupObservers() {
@@ -74,14 +74,33 @@ class PopularFilmsFragment : Fragment() {
             viewModel.isLoading.observe(viewLifecycleOwner) {
                 progressBar.visibility = if (it) View.VISIBLE else View.GONE
             }
-            viewModel.filmResponse.observe(viewLifecycleOwner) {
-                filmsAdapter.submitList(it.films)
+            viewModel.filmsResponse.observe(viewLifecycleOwner) {
                 if (it.error.isNotEmpty()) {
-                    // TODO: вывод сообщения как в ТЗ
-                    Toast.makeText(requireContext(), it.error, Toast.LENGTH_LONG).show()
+                    showError(it)
+                } else {
+                    filmsAdapter.submitList(it.films)
+                }
+            }
+            viewModel.oneFilmResponse.observe(viewLifecycleOwner) {
+                if (it.error.isNotEmpty()) {
+                    showError(it)
+                } else {
+                    showFileInfo(it.films[0])
                 }
             }
         }
+    }
+
+    private fun showFileInfo(film: Film) {
+        if (!isOnePanelMode()) {
+            binding.textViewName?.text = film.nameRu
+            binding.textViewDescription?.text = film.description
+        }
+    }
+
+    private fun showError(it: FilmResponse) {
+        // TODO: вывод сообщения как в ТЗ
+        Toast.makeText(requireContext(), it.error, Toast.LENGTH_LONG).show()
     }
 
     private fun isOnePanelMode(): Boolean = binding.textViewDescription == null

@@ -11,7 +11,7 @@ interface ApiService {
     suspend fun getTopPopularFilms(@Query(QUERY_PARAM_PAGE) page: Int): ResponseDto
 
     @Headers("X-API-KEY: $API_KEY", "Cache-Control: max-age=$CACHE_MAX_AGE_SECONDS")
-    @GET("top/{$QUERY_PATH_ID}")
+    @GET("{$QUERY_PATH_ID}")
     suspend fun getFilmDescription(@Path(QUERY_PATH_ID) id: Int): FilmDescriptionDto
 
     companion object {

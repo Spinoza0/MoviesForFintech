@@ -4,6 +4,6 @@ class DbConstants {
     companion object {
         const val FAVOURITE_TABLE = "favourite"
         const val DATABASE_NAME = "films.db"
-        const val DELIMITER = ","
+        const val DELIMITER = ", "
     }
 }

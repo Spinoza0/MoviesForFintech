@@ -10,16 +10,23 @@ import javax.inject.Inject
 class PopularFilmsViewModel @Inject constructor(private val repository: FilmsRepository) :
     ViewModel() {
 
-    val filmResponse = repository.getFilmsFromNetwork()
+    val filmsResponse = repository.getFilmsFromNetwork()
+    val oneFilmResponse = repository.getOneFilmFromNetwork()
     val isLoading = repository.getIsLoading()
 
     init {
-        loadMovies()
+        loadFilms()
     }
 
-    fun loadMovies() {
+    fun loadFilms() {
         viewModelScope.launch {
             repository.loadFilmsFromNetwork()
+        }
+    }
+
+    fun loadFullFilmData(filmId: Int) {
+        viewModelScope.launch {
+            repository.loadOneFilmFromNetwork(filmId)
         }
     }
 
