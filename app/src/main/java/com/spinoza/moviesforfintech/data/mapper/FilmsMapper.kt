@@ -74,7 +74,7 @@ class FilmsMapper @Inject constructor(private val filmsDao: FilmsDao) {
     suspend fun mapDtoToEntity(responseDto: ResponseDto): FilmResponse {
         val films = mutableListOf<Film>()
         responseDto.films?.forEach { films.add(mapDtoToEntity(it)) }
-        return FilmResponse(responseDto.pagesCount, "", films)
+        return FilmResponse("", films)
     }
 
     private fun genresDtoToString(genresDto: List<GenreDto>?): String {

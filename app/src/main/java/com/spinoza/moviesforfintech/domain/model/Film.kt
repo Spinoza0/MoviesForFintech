@@ -9,5 +9,5 @@ data class Film(
     val posterUrl: String,
     val posterUrlPreview: String,
     val description: String,
-    val isFavourite: Boolean
+    var isFavourite: Boolean
 )

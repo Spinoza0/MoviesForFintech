@@ -61,12 +61,11 @@ class PopularFilmsFragment : Fragment() {
 
     private fun setupRecyclerView() {
         binding.recyclerViewList.adapter = filmsAdapter
+        binding.recyclerViewList.itemAnimator = null
         filmsAdapter.onFilmItemClickListener = {
 
         }
-        filmsAdapter.onFilmItemLongClickListener = {
-
-        }
+        filmsAdapter.onFilmItemLongClickListener = { viewModel.changeFavouriteStatus(it) }
         filmsAdapter.onReachEndListener = { viewModel.loadMovies() }
     }
 
@@ -75,10 +74,12 @@ class PopularFilmsFragment : Fragment() {
             viewModel.isLoading.observe(viewLifecycleOwner) {
                 progressBar.visibility = if (it) View.VISIBLE else View.GONE
             }
-            viewModel.films.observe(viewLifecycleOwner) { filmsAdapter.submitList(it) }
-            viewModel.isError.observe(viewLifecycleOwner) {
-                // TODO: вывод сообщения как в ТЗ
-                Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
+            viewModel.filmResponse.observe(viewLifecycleOwner) {
+                filmsAdapter.submitList(it.films)
+                if (it.error.isNotEmpty()) {
+                    // TODO: вывод сообщения как в ТЗ
+                    Toast.makeText(requireContext(), it.error, Toast.LENGTH_LONG).show()
+                }
             }
         }
     }
