@@ -84,17 +84,23 @@ class FilmsRepositoryImpl @Inject constructor(
         } else {
             filmsDao.removeFilmFromFavourite(newFilm.filmId)
         }
-        val newFilms = mutableListOf<Film>()
-        allFilmsResponse.value?.let {
-            it.films.forEach { oldFilm ->
-                if (oldFilm.filmId == newFilm.filmId) {
-                    newFilms.add(newFilm)
-                } else {
-                    newFilms.add(oldFilm)
+
+        if (sourceType == SourceType.FAVOURITE) {
+            allFavouriteFilms = mapper.mapDbModelToEntity(filmsDao.getAllFavouriteFilms())
+            allFilmsResponse.value = FilmResponse("", allFavouriteFilms)
+        } else {
+            allFilmsResponse.value?.let {
+                val newFilms = it.films.map { oldFilm ->
+                    if (oldFilm.filmId != newFilm.filmId) {
+                        oldFilm
+                    }
+                    else {
+                        newFilm
+                    }
                 }
+                allFilmsResponse.value = FilmResponse("", newFilms)
             }
         }
-        allFilmsResponse.value = FilmResponse("", newFilms)
     }
 
     override suspend fun switchSourceTo(target: SourceType) {
