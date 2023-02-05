@@ -23,7 +23,6 @@ import com.spinoza.moviesforfintech.presentation.viewmodel.ViewModelFactory
 import javax.inject.Inject
 
 class PopularFilmsFragment : Fragment() {
-    private var sourceType = SourceType.POPULAR
     private var _binding: FragmentFilmsListBinding? = null
     private val binding: FragmentFilmsListBinding
         get() = _binding ?: throw RuntimeException("FragmentFilmsListBinding == null")
@@ -68,7 +67,7 @@ class PopularFilmsFragment : Fragment() {
     private fun setupScreen() {
         setupRecyclerView()
         setupObservers()
-        switchSourceTo(sourceType)
+        switchSourceTo(SourceType.POPULAR)
     }
 
     private fun setupRecyclerView() {
@@ -98,29 +97,27 @@ class PopularFilmsFragment : Fragment() {
                     showFileInfo(it.films[0])
                 }
             }
+            viewModel.sourceType.observe(viewLifecycleOwner) {
+                when(it) {
+                    SourceType.POPULAR -> {
+                        setButtonOn(textViewButtonFavourite, SourceType.FAVOURITE)
+                        setButtonOff(textViewButtonPopular)
+                        textViewPageTitlePopular.visibility = VISIBLE
+                        textViewPageTitleFavourite.visibility = INVISIBLE
+                    }
+                    else -> {
+                        setButtonOn(textViewButtonPopular, SourceType.POPULAR)
+                        setButtonOff(textViewButtonFavourite)
+                        textViewPageTitlePopular.visibility = INVISIBLE
+                        textViewPageTitleFavourite.visibility = VISIBLE
+                    }
+                }
+            }
         }
     }
 
     private fun switchSourceTo(target: SourceType) {
-        sourceType = target
-        setupListeners()
         viewModel.switchSourceTo(target)
-    }
-
-    private fun setupListeners() {
-        with(binding) {
-            if (sourceType == SourceType.POPULAR) {
-                setButtonOn(textViewButtonFavourite, SourceType.FAVOURITE)
-                setButtonOff(textViewButtonPopular)
-                textViewPageTitlePopular.visibility = VISIBLE
-                textViewPageTitleFavourite.visibility = INVISIBLE
-            } else if (sourceType == SourceType.FAVOURITE) {
-                setButtonOn(textViewButtonPopular, SourceType.POPULAR)
-                setButtonOff(textViewButtonFavourite)
-                textViewPageTitlePopular.visibility = INVISIBLE
-                textViewPageTitleFavourite.visibility = VISIBLE
-            }
-        }
     }
 
     private fun setButtonOff(textView: TextView) {
