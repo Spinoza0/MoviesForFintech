@@ -22,6 +22,7 @@ import com.spinoza.moviesforfintech.presentation.activity.FilmDetailsActivity
 import com.spinoza.moviesforfintech.presentation.activity.OnFragmentSendDataListener
 import com.spinoza.moviesforfintech.presentation.adapter.FilmsListAdapter
 import com.spinoza.moviesforfintech.presentation.utils.SOURCE_TYPE
+import com.spinoza.moviesforfintech.presentation.utils.SavedPosition
 import com.spinoza.moviesforfintech.presentation.utils.getSourceTypeFromBundle
 import com.spinoza.moviesforfintech.presentation.viewmodel.PopularFilmsViewModel
 import com.spinoza.moviesforfintech.presentation.viewmodel.ViewModelFactory
@@ -44,14 +45,24 @@ class PopularFilmsFragment : Fragment() {
     private val colorBackgroundButtonOff by lazy { getColor(R.color.background_button_off) }
     private val loadingError by lazy { getString(R.string.loading_error) }
 
-    private var needRestorePosition = false
-    private var firstVisiblePosition = 0
+    private lateinit var currentSourceType: SourceType
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
     @Inject
     lateinit var filmsAdapter: FilmsListAdapter
+
+    private val popularScreenSavedPosition = SavedPosition(
+        SourceType.POPULAR,
+        0,
+        false
+    )
+    private val favouriteScreenSavedPosition = SavedPosition(
+        SourceType.FAVOURITE,
+        0,
+        false
+    )
 
     lateinit var fragmentSendDataListener: OnFragmentSendDataListener
     override fun onAttach(context: Context) {
@@ -103,9 +114,13 @@ class PopularFilmsFragment : Fragment() {
                     showError(it)
                 } else {
                     filmsAdapter.submitList(it.films) {
-                        if (needRestorePosition) {
-                            recyclerViewList.scrollToPosition(firstVisiblePosition)
-                            needRestorePosition = false
+                        when (currentSourceType) {
+                            SourceType.POPULAR -> {
+                                restoreRecyclerViewPosition(popularScreenSavedPosition)
+                            }
+                            else -> {
+                                restoreRecyclerViewPosition(favouriteScreenSavedPosition)
+                            }
                         }
                     }
                 }
@@ -118,6 +133,7 @@ class PopularFilmsFragment : Fragment() {
                 }
             }
             viewModel.sourceType.observe(viewLifecycleOwner) {
+                currentSourceType = it
                 when (it) {
                     SourceType.POPULAR -> {
                         setButtonOn(textViewButtonFavourite, SourceType.FAVOURITE)
@@ -136,7 +152,27 @@ class PopularFilmsFragment : Fragment() {
         }
     }
 
+    private fun restoreRecyclerViewPosition(savedPosition: SavedPosition) {
+        if (savedPosition.needRestore) {
+            binding.recyclerViewList.scrollToPosition(savedPosition.position)
+            savedPosition.needRestore = false
+        }
+    }
+
+    private fun saveRecyclerViewPosition(savedPosition: SavedPosition) {
+        savedPosition.needRestore = true
+        savedPosition.position = getFirstVisiblePosition()
+    }
+
     private fun switchSourceTo(target: SourceType) {
+        when (target) {
+            SourceType.POPULAR -> {
+                saveRecyclerViewPosition(favouriteScreenSavedPosition)
+            }
+            else -> {
+                saveRecyclerViewPosition(popularScreenSavedPosition)
+            }
+        }
         fragmentSendDataListener(target)
         viewModel.switchSourceTo(target)
     }
@@ -150,13 +186,7 @@ class PopularFilmsFragment : Fragment() {
     private fun setButtonOn(textView: TextView, targetMode: SourceType) {
         textView.setTextColor(colorButtonOn)
         textView.background.setTint(colorBackgroundButtonOn)
-        textView.setOnClickListener {
-            if (targetMode == SourceType.FAVOURITE) {
-                needRestorePosition = true
-                firstVisiblePosition = getFirstVisiblePosition()
-            }
-            switchSourceTo(targetMode)
-        }
+        textView.setOnClickListener { switchSourceTo(targetMode) }
     }
 
     private fun getColor(colorRes: Int) = ContextCompat.getColor(requireContext(), colorRes)
