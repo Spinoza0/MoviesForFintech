@@ -5,12 +5,11 @@ import com.spinoza.moviesforfintech.presentation.viewmodel.PopularFilmsViewModel
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
-import dagger.multibindings.StringKey
 
 @Module
 interface ViewModelModule {
     @IntoMap
-    @StringKey("PopularFilmsViewModel")
+    @ViewModelKey(PopularFilmsViewModel::class)
     @Binds
     fun bindPopularFilmsViewModel(impl: PopularFilmsViewModel): ViewModel
 }

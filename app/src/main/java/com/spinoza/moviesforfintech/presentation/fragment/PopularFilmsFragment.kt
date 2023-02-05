@@ -8,6 +8,7 @@ import android.view.View.*
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -28,6 +29,7 @@ import com.spinoza.moviesforfintech.presentation.viewmodel.PopularFilmsViewModel
 import com.spinoza.moviesforfintech.presentation.viewmodel.ViewModelFactory
 import javax.inject.Inject
 
+
 class PopularFilmsFragment : Fragment() {
     private var _binding: FragmentFilmsListBinding? = null
     private val binding: FragmentFilmsListBinding
@@ -45,7 +47,7 @@ class PopularFilmsFragment : Fragment() {
     private val colorBackgroundButtonOff by lazy { getColor(R.color.background_button_off) }
     private val loadingError by lazy { getString(R.string.loading_error) }
 
-    private lateinit var currentSourceType: SourceType
+    private var currentSourceType = SourceType.POPULAR
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
@@ -87,6 +89,7 @@ class PopularFilmsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setOnBackPressedCallBack()
         setupScreen()
     }
 
@@ -215,6 +218,19 @@ class PopularFilmsFragment : Fragment() {
 
     private fun isOnePanelMode(): Boolean = binding.textViewDescription == null
     private fun parseArguments() = getSourceTypeFromBundle(requireArguments())
+
+    private fun setOnBackPressedCallBack() {
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (currentSourceType == SourceType.FAVOURITE) {
+                    switchSourceTo(SourceType.POPULAR)
+                } else {
+                    requireActivity().finish()
+                }
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
+    }
 
     companion object {
         private const val DEFAULT_VISIBLE_POSITION = 0
