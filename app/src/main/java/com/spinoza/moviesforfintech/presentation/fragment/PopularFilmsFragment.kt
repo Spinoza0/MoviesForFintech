@@ -12,7 +12,9 @@ import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.spinoza.moviesforfintech.R
 import com.spinoza.moviesforfintech.databinding.FragmentFilmsListBinding
 import com.spinoza.moviesforfintech.di.DaggerApplicationComponent
@@ -45,6 +47,24 @@ class PopularFilmsFragment : Fragment() {
     private val colorBackgroundButtonOn by lazy { getColor(R.color.background_button_on) }
     private val colorBackgroundButtonOff by lazy { getColor(R.color.background_button_off) }
     private val loadingError by lazy { getString(R.string.loading_error) }
+
+    private val itemTouchHelper by lazy {
+        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+            0,
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+        ) {
+
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder,
+            ): Boolean = false
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                viewModel.changeFavouriteStatus(filmsAdapter.currentList[viewHolder.adapterPosition])
+            }
+        })
+    }
 
     private var currentScreenType = ScreenType.POPULAR
 
@@ -151,16 +171,26 @@ class PopularFilmsFragment : Fragment() {
                         setButtonOff(textViewButtonPopular)
                         textViewPageTitlePopular.visibility = VISIBLE
                         textViewPageTitleFavourite.visibility = INVISIBLE
+                        removeSwipeFromRecyclerView()
                     }
                     else -> {
                         setButtonOn(textViewButtonPopular, ScreenType.POPULAR)
                         setButtonOff(textViewButtonFavourite)
                         textViewPageTitlePopular.visibility = INVISIBLE
                         textViewPageTitleFavourite.visibility = VISIBLE
+                        addSwipeToRecyclerView()
                     }
                 }
             }
         }
+    }
+
+    private fun addSwipeToRecyclerView() {
+        itemTouchHelper.attachToRecyclerView(binding.recyclerViewList)
+    }
+
+    private fun removeSwipeFromRecyclerView() {
+        itemTouchHelper.attachToRecyclerView(null)
     }
 
     private fun restoreRecyclerViewPosition(savedPosition: SavedPosition) {
