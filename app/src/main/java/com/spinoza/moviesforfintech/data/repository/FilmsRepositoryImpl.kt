@@ -87,7 +87,18 @@ class FilmsRepositoryImpl @Inject constructor(
     }
 
     override suspend fun changeFavouriteStatus(film: Film) {
-        val newFilm = film.copy(isFavourite = !film.isFavourite)
+        var newFilm = film.copy(isFavourite = !film.isFavourite)
+        if (newFilm.isFavourite) {
+            if (newFilm.description.isEmpty()) {
+                newFilm = try {
+                    val tempFilm = mapper.mapDtoToEntity(apiService.getFilmDescription(film.filmId))
+                    tempFilm.copy(isFavourite = !tempFilm.isFavourite)
+                } catch (e: Exception) {
+                    film.copy(isFavourite = !film.isFavourite)
+                }
+            }
+        }
+
         if (newFilm.isFavourite) {
             filmsDao.insertFilmToFavourite(mapper.mapEntityToDbModel(newFilm))
         } else {
