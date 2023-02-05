@@ -67,7 +67,11 @@ class FilmsRepositoryImpl @Inject constructor(
                     val film = mapper.mapDtoToEntity(apiService.getFilmDescription(filmId))
                     FilmResponse("", listOf(film))
                 } catch (e: Exception) {
-                    FilmResponse(e.localizedMessage ?: e.message ?: e.toString(), listOf())
+                    if (filmsDao.isFilmFavourite(filmId)) {
+                        getFilmResponseFromFavourite(filmId)
+                    } else {
+                        FilmResponse(e.localizedMessage ?: e.message ?: e.toString(), listOf())
+                    }
                 }
             } else {
                 val film = mapper.mapDbModelToEntity(filmsDao.getFavouriteFilm(filmId))
@@ -75,6 +79,11 @@ class FilmsRepositoryImpl @Inject constructor(
             }
             isLoading.value = false
         }
+    }
+
+    private suspend fun getFilmResponseFromFavourite(filmId: Int): FilmResponse {
+        val film = mapper.mapDbModelToEntity(filmsDao.getFavouriteFilm(filmId))
+        return FilmResponse("", listOf(film))
     }
 
     override suspend fun changeFavouriteStatus(film: Film) {
@@ -93,8 +102,7 @@ class FilmsRepositoryImpl @Inject constructor(
                 val newFilms = it.films.map { oldFilm ->
                     if (oldFilm.filmId != newFilm.filmId) {
                         oldFilm
-                    }
-                    else {
+                    } else {
                         newFilm
                     }
                 }
