@@ -42,6 +42,7 @@ class PopularFilmsFragment : Fragment() {
     private val colorButtonOff by lazy { getColor(R.color.text_button_off) }
     private val colorBackgroundButtonOn by lazy { getColor(R.color.background_button_on) }
     private val colorBackgroundButtonOff by lazy { getColor(R.color.background_button_off) }
+    private val loadingError by lazy { getString(R.string.loading_error) }
 
     private var needRestorePosition = false
     private var firstVisiblePosition = 0
@@ -170,8 +171,7 @@ class PopularFilmsFragment : Fragment() {
     }
 
     private fun showError(it: FilmResponse) {
-        // TODO: вывод сообщения как в ТЗ
-        Toast.makeText(requireContext(), it.error, Toast.LENGTH_LONG).show()
+        Toast.makeText(requireContext(), "$loadingError: ${it.error}", Toast.LENGTH_LONG).show()
     }
 
     private fun getFirstVisiblePosition(): Int {
