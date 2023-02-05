@@ -182,16 +182,24 @@ class PopularFilmsFragment : Fragment() {
     }
 
     private fun switchSourceTo(target: ScreenType) {
-        fragmentSendDataListener.savePosition(savePosition(target))
+        val savedPosition = when (target) {
+            ScreenType.POPULAR -> {
+                saveRecyclerViewPosition(favouriteScreenSavedPosition)
+            }
+            else -> {
+                saveRecyclerViewPosition(popularScreenSavedPosition)
+            }
+        }
+        fragmentSendDataListener.savePosition(savedPosition)
         viewModel.switchSourceTo(target)
     }
 
-    private fun savePosition(target: ScreenType) = when (target) {
+    private fun saveScreenPosition(target: ScreenType) = when (target) {
         ScreenType.POPULAR -> {
-            saveRecyclerViewPosition(favouriteScreenSavedPosition)
+            saveRecyclerViewPosition(popularScreenSavedPosition)
         }
         else -> {
-            saveRecyclerViewPosition(popularScreenSavedPosition)
+            saveRecyclerViewPosition(favouriteScreenSavedPosition)
         }
     }
 
@@ -211,14 +219,7 @@ class PopularFilmsFragment : Fragment() {
 
     private fun showFileInfo(film: Film) {
         if (isOnePanelMode()) {
-            val savedPosition = when (currentScreenType) {
-                ScreenType.POPULAR -> {
-                    saveRecyclerViewPosition(popularScreenSavedPosition)
-                }
-                else -> {
-                    saveRecyclerViewPosition(favouriteScreenSavedPosition)
-                }
-            }
+            val savedPosition = saveScreenPosition(currentScreenType)
             savedPosition.openDetails = true
             fragmentSendDataListener.savePosition(savedPosition)
             requireActivity().supportFragmentManager.beginTransaction()
@@ -268,5 +269,10 @@ class PopularFilmsFragment : Fragment() {
         fun newInstance(savedPosition: SavedPosition) = PopularFilmsFragment().apply {
             arguments = Bundle().apply { putParcelable(KEY_SAVED_POSITION, savedPosition) }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        fragmentSendDataListener.savePosition(saveScreenPosition(currentScreenType))
     }
 }
