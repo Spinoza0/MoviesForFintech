@@ -11,5 +11,5 @@ interface FilmsRepository {
     suspend fun loadOneFilm(filmId: Int)
     fun getIsLoading(): LiveData<Boolean>
     suspend fun changeFavouriteStatus(film: Film)
-    suspend fun switchSourceTo(target: SourceType)
+    suspend fun switchSourceTo(target: ScreenType)
 }

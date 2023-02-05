@@ -46,4 +46,13 @@ class FilmsListAdapter @Inject constructor() :
             }
         }
     }
+
+    override fun onViewRecycled(holder: FilmViewHolder) {
+        super.onViewRecycled(holder)
+        with(holder.binding) {
+            imageViewPoster.setImageDrawable(null)
+            textViewName.text = null
+            textGenreYear.text = null
+        }
+    }
 }
