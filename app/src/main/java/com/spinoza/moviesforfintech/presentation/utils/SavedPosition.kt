@@ -1,9 +1,13 @@
 package com.spinoza.moviesforfintech.presentation.utils
 
-import com.spinoza.moviesforfintech.domain.repository.SourceType
+import android.os.Parcelable
+import com.spinoza.moviesforfintech.domain.repository.ScreenType
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class SavedPosition(
-    val sourceType: SourceType,
+    var screenType: ScreenType,
     var position: Int,
     var needRestore: Boolean,
-)
+    var openDetails: Boolean,
+) : Parcelable

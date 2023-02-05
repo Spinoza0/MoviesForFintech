@@ -4,7 +4,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-enum class SourceType : Parcelable {
+enum class ScreenType : Parcelable {
     WITHOUT_TYPE,
     POPULAR,
     FAVOURITE,

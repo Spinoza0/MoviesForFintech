@@ -8,7 +8,7 @@ import com.spinoza.moviesforfintech.data.network.ApiFactory
 import com.spinoza.moviesforfintech.domain.model.Film
 import com.spinoza.moviesforfintech.domain.model.FilmResponse
 import com.spinoza.moviesforfintech.domain.repository.FilmsRepository
-import com.spinoza.moviesforfintech.domain.repository.SourceType
+import com.spinoza.moviesforfintech.domain.repository.ScreenType
 import javax.inject.Inject
 
 class FilmsRepositoryImpl @Inject constructor(
@@ -24,17 +24,17 @@ class FilmsRepositoryImpl @Inject constructor(
     private var page = FIRST_PAGE
     private val allPopularFilms = mutableListOf<Film>()
     private lateinit var allFavouriteFilms: List<Film>
-    private var sourceType = SourceType.WITHOUT_TYPE
+    private var screenType = ScreenType.WITHOUT_TYPE
 
     override fun getAllFilms(): LiveData<FilmResponse> = allFilmsResponse
     override fun getOneFilm(): LiveData<FilmResponse> = oneFilmResponse
     override fun getIsLoading(): LiveData<Boolean> = isLoading
 
     override suspend fun loadAllFilms() {
-        if (sourceType == SourceType.WITHOUT_TYPE) {
-            switchSourceTo(SourceType.POPULAR)
+        if (screenType == ScreenType.WITHOUT_TYPE) {
+            switchSourceTo(ScreenType.POPULAR)
         } else if (isLoading.value == false) {
-            if (sourceType == SourceType.POPULAR) {
+            if (screenType == ScreenType.POPULAR) {
                 if (page <= MAX_PAGE) {
                     val newResponse = try {
                         isLoading.value = true
@@ -62,7 +62,7 @@ class FilmsRepositoryImpl @Inject constructor(
     override suspend fun loadOneFilm(filmId: Int) {
         if (isLoading.value == false) {
             isLoading.value = true
-            oneFilmResponse.value = if (sourceType == SourceType.POPULAR) {
+            oneFilmResponse.value = if (screenType == ScreenType.POPULAR) {
                 try {
                     val film = mapper.mapDtoToEntity(apiService.getFilmDescription(filmId))
                     FilmResponse("", listOf(film))
@@ -105,7 +105,7 @@ class FilmsRepositoryImpl @Inject constructor(
             filmsDao.removeFilmFromFavourite(newFilm.filmId)
         }
 
-        if (sourceType == SourceType.FAVOURITE) {
+        if (screenType == ScreenType.FAVOURITE) {
             allFavouriteFilms = mapper.mapDbModelToEntity(filmsDao.getAllFavouriteFilms())
             allFilmsResponse.value = FilmResponse("", allFavouriteFilms)
         } else {
@@ -122,10 +122,10 @@ class FilmsRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun switchSourceTo(target: SourceType) {
-        if (target != sourceType && target != SourceType.WITHOUT_TYPE) {
-            sourceType = target
-            if (sourceType == SourceType.POPULAR) {
+    override suspend fun switchSourceTo(target: ScreenType) {
+        if (target != screenType && target != ScreenType.WITHOUT_TYPE) {
+            screenType = target
+            if (screenType == ScreenType.POPULAR) {
 
                 if (allPopularFilms.size > 0) {
                     val newFilms = mutableListOf<Film>()

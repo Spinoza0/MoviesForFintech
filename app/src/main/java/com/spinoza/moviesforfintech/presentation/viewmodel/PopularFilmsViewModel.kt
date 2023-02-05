@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.spinoza.moviesforfintech.domain.model.Film
 import com.spinoza.moviesforfintech.domain.repository.FilmsRepository
-import com.spinoza.moviesforfintech.domain.repository.SourceType
+import com.spinoza.moviesforfintech.domain.repository.ScreenType
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -17,12 +17,12 @@ class PopularFilmsViewModel @Inject constructor(private val repository: FilmsRep
     val oneFilmResponse = repository.getOneFilm()
     val isLoading = repository.getIsLoading()
 
-    private val _sourceType = MutableLiveData<SourceType>()
-    val sourceType: LiveData<SourceType>
-        get() = _sourceType
+    private val _screenType = MutableLiveData<ScreenType>()
+    val screenType: LiveData<ScreenType>
+        get() = _screenType
 
     init {
-        _sourceType.value = SourceType.POPULAR
+        _screenType.value = ScreenType.POPULAR
     }
 
     fun loadAllFilms() {
@@ -43,10 +43,10 @@ class PopularFilmsViewModel @Inject constructor(private val repository: FilmsRep
         }
     }
 
-    fun switchSourceTo(target: SourceType) {
+    fun switchSourceTo(target: ScreenType) {
         viewModelScope.launch {
             repository.switchSourceTo(target)
         }
-        _sourceType.value = target
+        _screenType.value = target
     }
 }

@@ -18,13 +18,12 @@ import com.spinoza.moviesforfintech.databinding.FragmentFilmsListBinding
 import com.spinoza.moviesforfintech.di.DaggerApplicationComponent
 import com.spinoza.moviesforfintech.domain.model.Film
 import com.spinoza.moviesforfintech.domain.model.FilmResponse
-import com.spinoza.moviesforfintech.domain.repository.SourceType
-import com.spinoza.moviesforfintech.presentation.activity.FilmDetailsActivity
-import com.spinoza.moviesforfintech.presentation.activity.OnFragmentSendDataListener
+import com.spinoza.moviesforfintech.domain.repository.ScreenType
+import com.spinoza.moviesforfintech.presentation.activity.OnFragmentSavedPositionListener
 import com.spinoza.moviesforfintech.presentation.adapter.FilmsListAdapter
-import com.spinoza.moviesforfintech.presentation.utils.SOURCE_TYPE
+import com.spinoza.moviesforfintech.presentation.utils.KEY_SAVED_POSITION
 import com.spinoza.moviesforfintech.presentation.utils.SavedPosition
-import com.spinoza.moviesforfintech.presentation.utils.getSourceTypeFromBundle
+import com.spinoza.moviesforfintech.presentation.utils.getSavedPositionFromBundle
 import com.spinoza.moviesforfintech.presentation.viewmodel.PopularFilmsViewModel
 import com.spinoza.moviesforfintech.presentation.viewmodel.ViewModelFactory
 import javax.inject.Inject
@@ -47,7 +46,7 @@ class PopularFilmsFragment : Fragment() {
     private val colorBackgroundButtonOff by lazy { getColor(R.color.background_button_off) }
     private val loadingError by lazy { getString(R.string.loading_error) }
 
-    private var currentSourceType = SourceType.POPULAR
+    private var currentScreenType = ScreenType.POPULAR
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
@@ -56,20 +55,22 @@ class PopularFilmsFragment : Fragment() {
     lateinit var filmsAdapter: FilmsListAdapter
 
     private val popularScreenSavedPosition = SavedPosition(
-        SourceType.POPULAR,
-        0,
-        false
+        screenType = ScreenType.POPULAR,
+        position = 0,
+        needRestore = false,
+        openDetails = false
     )
     private val favouriteScreenSavedPosition = SavedPosition(
-        SourceType.FAVOURITE,
-        0,
-        false
+        screenType = ScreenType.FAVOURITE,
+        position = 0,
+        needRestore = false,
+        openDetails = false
     )
 
-    lateinit var fragmentSendDataListener: OnFragmentSendDataListener
+    private lateinit var fragmentSendDataListener: OnFragmentSavedPositionListener
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        fragmentSendDataListener = context as OnFragmentSendDataListener
+        fragmentSendDataListener = context as OnFragmentSavedPositionListener
     }
 
     override fun onCreateView(
@@ -90,13 +91,20 @@ class PopularFilmsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setOnBackPressedCallBack()
+        val savedPosition = parseArguments()
+        currentScreenType = savedPosition.screenType
+        if (savedPosition.screenType == ScreenType.POPULAR) {
+            restoreScreenSavedPosition(savedPosition, popularScreenSavedPosition)
+        } else {
+            restoreScreenSavedPosition(savedPosition, favouriteScreenSavedPosition)
+        }
         setupScreen()
     }
 
     private fun setupScreen() {
         setupRecyclerView()
         setupObservers()
-        switchSourceTo(parseArguments())
+        switchSourceTo(currentScreenType)
     }
 
     private fun setupRecyclerView() {
@@ -117,8 +125,8 @@ class PopularFilmsFragment : Fragment() {
                     showError(it)
                 } else {
                     filmsAdapter.submitList(it.films) {
-                        when (currentSourceType) {
-                            SourceType.POPULAR -> {
+                        when (currentScreenType) {
+                            ScreenType.POPULAR -> {
                                 restoreRecyclerViewPosition(popularScreenSavedPosition)
                             }
                             else -> {
@@ -135,17 +143,17 @@ class PopularFilmsFragment : Fragment() {
                     showFileInfo(it.films[0])
                 }
             }
-            viewModel.sourceType.observe(viewLifecycleOwner) {
-                currentSourceType = it
+            viewModel.screenType.observe(viewLifecycleOwner) {
+                currentScreenType = it
                 when (it) {
-                    SourceType.POPULAR -> {
-                        setButtonOn(textViewButtonFavourite, SourceType.FAVOURITE)
+                    ScreenType.POPULAR -> {
+                        setButtonOn(textViewButtonFavourite, ScreenType.FAVOURITE)
                         setButtonOff(textViewButtonPopular)
                         textViewPageTitlePopular.visibility = VISIBLE
                         textViewPageTitleFavourite.visibility = INVISIBLE
                     }
                     else -> {
-                        setButtonOn(textViewButtonPopular, SourceType.POPULAR)
+                        setButtonOn(textViewButtonPopular, ScreenType.POPULAR)
                         setButtonOff(textViewButtonFavourite)
                         textViewPageTitlePopular.visibility = INVISIBLE
                         textViewPageTitleFavourite.visibility = VISIBLE
@@ -162,22 +170,29 @@ class PopularFilmsFragment : Fragment() {
         }
     }
 
-    private fun saveRecyclerViewPosition(savedPosition: SavedPosition) {
+    private fun saveRecyclerViewPosition(savedPosition: SavedPosition): SavedPosition {
         savedPosition.needRestore = true
         savedPosition.position = getFirstVisiblePosition()
+        return savedPosition
     }
 
-    private fun switchSourceTo(target: SourceType) {
-        when (target) {
-            SourceType.POPULAR -> {
-                saveRecyclerViewPosition(favouriteScreenSavedPosition)
-            }
-            else -> {
-                saveRecyclerViewPosition(popularScreenSavedPosition)
-            }
-        }
-        fragmentSendDataListener(target)
+    private fun restoreScreenSavedPosition(source: SavedPosition, target: SavedPosition) {
+        target.needRestore = source.needRestore
+        target.position = source.position
+    }
+
+    private fun switchSourceTo(target: ScreenType) {
+        fragmentSendDataListener.savePosition(savePosition(target))
         viewModel.switchSourceTo(target)
+    }
+
+    private fun savePosition(target: ScreenType) = when (target) {
+        ScreenType.POPULAR -> {
+            saveRecyclerViewPosition(favouriteScreenSavedPosition)
+        }
+        else -> {
+            saveRecyclerViewPosition(popularScreenSavedPosition)
+        }
     }
 
     private fun setButtonOff(textView: TextView) {
@@ -186,7 +201,7 @@ class PopularFilmsFragment : Fragment() {
         textView.setOnClickListener(null)
     }
 
-    private fun setButtonOn(textView: TextView, targetMode: SourceType) {
+    private fun setButtonOn(textView: TextView, targetMode: ScreenType) {
         textView.setTextColor(colorButtonOn)
         textView.background.setTint(colorBackgroundButtonOn)
         textView.setOnClickListener { switchSourceTo(targetMode) }
@@ -196,7 +211,23 @@ class PopularFilmsFragment : Fragment() {
 
     private fun showFileInfo(film: Film) {
         if (isOnePanelMode()) {
-            startActivity(FilmDetailsActivity.newIntent(requireContext(), film))
+            val savedPosition = when (currentScreenType) {
+                ScreenType.POPULAR -> {
+                    saveRecyclerViewPosition(popularScreenSavedPosition)
+                }
+                else -> {
+                    saveRecyclerViewPosition(favouriteScreenSavedPosition)
+                }
+            }
+            savedPosition.openDetails = true
+            fragmentSendDataListener.savePosition(savedPosition)
+            requireActivity().supportFragmentManager.beginTransaction()
+                .replace(
+                    R.id.fragmentContainer,
+                    FilmDetailsFragment.newInstance(film, savedPosition)
+                )
+                .commit()
+
         } else {
             binding.textViewName?.text = film.nameRu
             binding.textViewDescription?.text = film.description
@@ -217,13 +248,13 @@ class PopularFilmsFragment : Fragment() {
     }
 
     private fun isOnePanelMode(): Boolean = binding.textViewDescription == null
-    private fun parseArguments() = getSourceTypeFromBundle(requireArguments())
+    private fun parseArguments() = getSavedPositionFromBundle(requireArguments())
 
     private fun setOnBackPressedCallBack() {
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (currentSourceType == SourceType.FAVOURITE) {
-                    switchSourceTo(SourceType.POPULAR)
+                if (currentScreenType == ScreenType.FAVOURITE) {
+                    switchSourceTo(ScreenType.POPULAR)
                 } else {
                     requireActivity().finish()
                 }
@@ -234,8 +265,8 @@ class PopularFilmsFragment : Fragment() {
 
     companion object {
         private const val DEFAULT_VISIBLE_POSITION = 0
-        fun newInstance(sourceType: SourceType) = PopularFilmsFragment().apply {
-            arguments = Bundle().apply { putParcelable(SOURCE_TYPE, sourceType) }
+        fun newInstance(savedPosition: SavedPosition) = PopularFilmsFragment().apply {
+            arguments = Bundle().apply { putParcelable(KEY_SAVED_POSITION, savedPosition) }
         }
     }
 }
