@@ -33,6 +33,9 @@ class FilmsMapper @Inject constructor(private val filmsDao: FilmsDao) {
         isFavourite = true
     )
 
+    fun mapDbModelToEntity(filmDbModelList: List<FilmDbModel>) =
+        filmDbModelList.map { mapDbModelToEntity(it) }
+
     suspend fun mapDtoToEntity(filmDescriptionDto: FilmDescriptionDto): Film {
         val filmId = filmDescriptionDto.filmId ?: 0
         val isFavourite = when (filmDescriptionDto.filmId) {

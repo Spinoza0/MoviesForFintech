@@ -8,6 +8,7 @@ import com.spinoza.moviesforfintech.data.network.ApiFactory
 import com.spinoza.moviesforfintech.domain.model.Film
 import com.spinoza.moviesforfintech.domain.model.FilmResponse
 import com.spinoza.moviesforfintech.domain.repository.FilmsRepository
+import com.spinoza.moviesforfintech.domain.repository.SourceType
 import javax.inject.Inject
 
 class FilmsRepositoryImpl @Inject constructor(
@@ -16,55 +17,65 @@ class FilmsRepositoryImpl @Inject constructor(
 ) : FilmsRepository {
 
     private val apiService = ApiFactory.apiService
-    private val filmsResponse = MutableLiveData<FilmResponse>()
+    private val allFilmsResponse = MutableLiveData<FilmResponse>()
     private val oneFilmResponse = MutableLiveData<FilmResponse>()
-    private val isLoading = MutableLiveData<Boolean>(false)
+    private val isLoading = MutableLiveData(false)
 
     private var page = FIRST_PAGE
+    private val allPopularFilms = mutableListOf<Film>()
+    private lateinit var allFavouriteFilms: List<Film>
+    private var sourceType = SourceType.WITHOUT_TYPE
 
-    override fun getFilmsFromNetwork(): LiveData<FilmResponse> = filmsResponse
-    override fun getOneFilmFromNetwork(): LiveData<FilmResponse> = oneFilmResponse
+    override fun getAllFilms(): LiveData<FilmResponse> = allFilmsResponse
+    override fun getOneFilm(): LiveData<FilmResponse> = oneFilmResponse
     override fun getIsLoading(): LiveData<Boolean> = isLoading
 
-    override suspend fun loadFilmsFromNetwork() {
-        isLoading.value?.let { loading ->
-            if (page <= MAX_PAGE && !loading) {
-                val newResponse = try {
-                    isLoading.value = true
-                    mapper.mapDtoToEntity(apiService.getTopPopularFilms(page))
-                } catch (e: Exception) {
-                    FilmResponse(e.localizedMessage ?: e.message ?: e.toString(), listOf())
+    override suspend fun loadAllFilms() {
+        if (sourceType == SourceType.WITHOUT_TYPE) {
+            switchSourceTo(SourceType.POPULAR)
+        } else if (isLoading.value == false) {
+            if (sourceType == SourceType.POPULAR) {
+                if (page <= MAX_PAGE) {
+                    val newResponse = try {
+                        isLoading.value = true
+                        mapper.mapDtoToEntity(apiService.getTopPopularFilms(page))
+                    } catch (e: Exception) {
+                        FilmResponse(
+                            e.localizedMessage ?: e.message ?: e.toString(),
+                            listOf()
+                        )
+                    }
+                    page++
+                    val newFilms = mutableListOf<Film>()
+                    allFilmsResponse.value?.let { newFilms.addAll(it.films) }
+                    newFilms.addAll(newResponse.films)
+                    allFilmsResponse.value =
+                        newResponse.copy(error = newResponse.error, films = newFilms)
+                    isLoading.value = false
                 }
-                page++
-                val newFilms = mutableListOf<Film>()
-                filmsResponse.value?.let { newFilms.addAll(it.films) }
-                newFilms.addAll(newResponse.films)
-                filmsResponse.value = newResponse.copy(error = newResponse.error, films = newFilms)
-                isLoading.value = false
+            } else {
+                allFilmsResponse.value = FilmResponse("", allFavouriteFilms)
             }
         }
     }
 
-    override suspend fun loadOneFilmFromNetwork(filmId: Int) {
-        isLoading.value?.let { loading ->
-            if (!loading) {
-                isLoading.value = true
-                oneFilmResponse.value = try {
+    override suspend fun loadOneFilm(filmId: Int) {
+        if (isLoading.value == false) {
+            isLoading.value = true
+            oneFilmResponse.value = if (sourceType == SourceType.POPULAR) {
+                try {
                     val film = mapper.mapDtoToEntity(apiService.getFilmDescription(filmId))
                     FilmResponse("", listOf(film))
                 } catch (e: Exception) {
                     FilmResponse(e.localizedMessage ?: e.message ?: e.toString(), listOf())
                 }
-                isLoading.value = false
+            } else {
+                val film = mapper.mapDbModelToEntity(filmsDao.getFavouriteFilm(filmId))
+                FilmResponse("", listOf(film))
             }
+            isLoading.value = false
         }
     }
-
-    override suspend fun getAllFavouriteFilms(): List<Film> =
-        filmsDao.getAllFavouriteFilms().map { mapper.mapDbModelToEntity(it) }
-
-    override suspend fun getFavouriteFilm(filmId: Int): Film =
-        mapper.mapDbModelToEntity(filmsDao.getFavouriteFilm(filmId))
 
     override suspend fun changeFavouriteStatus(film: Film) {
         val newFilm = film.copy(isFavourite = !film.isFavourite)
@@ -74,7 +85,7 @@ class FilmsRepositoryImpl @Inject constructor(
             filmsDao.removeFilmFromFavourite(newFilm.filmId)
         }
         val newFilms = mutableListOf<Film>()
-        filmsResponse.value?.let {
+        allFilmsResponse.value?.let {
             it.films.forEach { oldFilm ->
                 if (oldFilm.filmId == newFilm.filmId) {
                     newFilms.add(newFilm)
@@ -83,7 +94,29 @@ class FilmsRepositoryImpl @Inject constructor(
                 }
             }
         }
-        filmsResponse.value = FilmResponse("", newFilms)
+        allFilmsResponse.value = FilmResponse("", newFilms)
+    }
+
+    override suspend fun switchSourceTo(target: SourceType) {
+        if (target != sourceType && target != SourceType.WITHOUT_TYPE) {
+            sourceType = target
+            if (sourceType == SourceType.POPULAR) {
+
+                if (allPopularFilms.size > 0) {
+                    val newFilms = mutableListOf<Film>()
+                    newFilms.addAll(allPopularFilms)
+                    allFilmsResponse.value = FilmResponse("", newFilms)
+                } else {
+                    loadAllFilms()
+                }
+            } else {
+                allFilmsResponse.value?.let {
+                    allPopularFilms.addAll(it.films)
+                }
+                allFavouriteFilms = mapper.mapDbModelToEntity(filmsDao.getAllFavouriteFilms())
+                allFilmsResponse.value = FilmResponse("", allFavouriteFilms)
+            }
+        }
     }
 
     companion object {

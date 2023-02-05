@@ -7,7 +7,7 @@
     tools:context=".presentation.fragment.PopularFilmsFragment">
 
     <TextView
-        android:id="@+id/textViewPageTitle"
+        android:id="@+id/textViewPageTitlePopular"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
@@ -16,6 +16,20 @@
         android:textColor="@color/black"
         android:textSize="25sp"
         android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewPageTitleFavourite"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:gravity="center"
+        android:text="@string/favourite"
+        android:textColor="@color/black"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -30,7 +44,7 @@
         app:layout_constraintBottom_toTopOf="@id/textViewButtonFavourite"
         app:layout_constraintEnd_toStartOf="@id/guideline"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewPageTitle"
+        app:layout_constraintTop_toBottomOf="@id/textViewPageTitlePopular"
         tools:listitem="@layout/film_item" />
 
     <TextView
