@@ -1,5 +1,6 @@
 package com.spinoza.moviesforfintech.presentation.fragment
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.spinoza.moviesforfintech.R
 import com.spinoza.moviesforfintech.databinding.FragmentFilmsListBinding
 import com.spinoza.moviesforfintech.di.DaggerApplicationComponent
@@ -17,7 +19,10 @@ import com.spinoza.moviesforfintech.domain.model.Film
 import com.spinoza.moviesforfintech.domain.model.FilmResponse
 import com.spinoza.moviesforfintech.domain.repository.SourceType
 import com.spinoza.moviesforfintech.presentation.activity.FilmDetailsActivity
+import com.spinoza.moviesforfintech.presentation.activity.OnFragmentSendDataListener
 import com.spinoza.moviesforfintech.presentation.adapter.FilmsListAdapter
+import com.spinoza.moviesforfintech.presentation.utils.SOURCE_TYPE
+import com.spinoza.moviesforfintech.presentation.utils.getSourceTypeFromBundle
 import com.spinoza.moviesforfintech.presentation.viewmodel.PopularFilmsViewModel
 import com.spinoza.moviesforfintech.presentation.viewmodel.ViewModelFactory
 import javax.inject.Inject
@@ -38,11 +43,20 @@ class PopularFilmsFragment : Fragment() {
     private val colorBackgroundButtonOn by lazy { getColor(R.color.background_button_on) }
     private val colorBackgroundButtonOff by lazy { getColor(R.color.background_button_off) }
 
+    private var needRestorePosition = false
+    private var firstVisiblePosition = 0
+
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
     @Inject
     lateinit var filmsAdapter: FilmsListAdapter
+
+    lateinit var fragmentSendDataListener: OnFragmentSendDataListener
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        fragmentSendDataListener = context as OnFragmentSendDataListener
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -67,7 +81,7 @@ class PopularFilmsFragment : Fragment() {
     private fun setupScreen() {
         setupRecyclerView()
         setupObservers()
-        switchSourceTo(SourceType.POPULAR)
+        switchSourceTo(parseArguments())
     }
 
     private fun setupRecyclerView() {
@@ -87,7 +101,12 @@ class PopularFilmsFragment : Fragment() {
                 if (it.error.isNotEmpty()) {
                     showError(it)
                 } else {
-                    filmsAdapter.submitList(it.films)
+                    filmsAdapter.submitList(it.films) {
+                        if (needRestorePosition) {
+                            recyclerViewList.scrollToPosition(firstVisiblePosition)
+                            needRestorePosition = false
+                        }
+                    }
                 }
             }
             viewModel.oneFilmResponse.observe(viewLifecycleOwner) {
@@ -98,7 +117,7 @@ class PopularFilmsFragment : Fragment() {
                 }
             }
             viewModel.sourceType.observe(viewLifecycleOwner) {
-                when(it) {
+                when (it) {
                     SourceType.POPULAR -> {
                         setButtonOn(textViewButtonFavourite, SourceType.FAVOURITE)
                         setButtonOff(textViewButtonPopular)
@@ -117,6 +136,7 @@ class PopularFilmsFragment : Fragment() {
     }
 
     private fun switchSourceTo(target: SourceType) {
+        fragmentSendDataListener(target)
         viewModel.switchSourceTo(target)
     }
 
@@ -129,7 +149,13 @@ class PopularFilmsFragment : Fragment() {
     private fun setButtonOn(textView: TextView, targetMode: SourceType) {
         textView.setTextColor(colorButtonOn)
         textView.background.setTint(colorBackgroundButtonOn)
-        textView.setOnClickListener { switchSourceTo(targetMode) }
+        textView.setOnClickListener {
+            if (targetMode == SourceType.FAVOURITE) {
+                needRestorePosition = true
+                firstVisiblePosition = getFirstVisiblePosition()
+            }
+            switchSourceTo(targetMode)
+        }
     }
 
     private fun getColor(colorRes: Int) = ContextCompat.getColor(requireContext(), colorRes)
@@ -148,9 +174,22 @@ class PopularFilmsFragment : Fragment() {
         Toast.makeText(requireContext(), it.error, Toast.LENGTH_LONG).show()
     }
 
+    private fun getFirstVisiblePosition(): Int {
+        return if (binding.recyclerViewList.layoutManager is LinearLayoutManager) {
+            (binding.recyclerViewList.layoutManager as LinearLayoutManager)
+                .findFirstVisibleItemPosition()
+        } else {
+            DEFAULT_VISIBLE_POSITION
+        }
+    }
+
     private fun isOnePanelMode(): Boolean = binding.textViewDescription == null
+    private fun parseArguments() = getSourceTypeFromBundle(requireArguments())
 
     companion object {
-        fun newInstance() = PopularFilmsFragment()
+        private const val DEFAULT_VISIBLE_POSITION = 0
+        fun newInstance(sourceType: SourceType) = PopularFilmsFragment().apply {
+            arguments = Bundle().apply { putParcelable(SOURCE_TYPE, sourceType) }
+        }
     }
 }
