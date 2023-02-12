@@ -88,6 +88,8 @@ class PopularFilmsFragment : Fragment() {
 
     private lateinit var fragmentSendDataListener: OnFragmentSavedPositionListener
     override fun onAttach(context: Context) {
+        component.inject(this)
+
         super.onAttach(context)
         fragmentSendDataListener = context as OnFragmentSavedPositionListener
     }
@@ -97,7 +99,6 @@ class PopularFilmsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        component.inject(this)
         _binding = FragmentFilmsListBinding.inflate(inflater, container, false)
         return binding.root
     }
