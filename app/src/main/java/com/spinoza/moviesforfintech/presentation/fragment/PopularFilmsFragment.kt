@@ -48,24 +48,6 @@ class PopularFilmsFragment : Fragment() {
     private val colorBackgroundButtonOff by lazy { getColor(R.color.background_button_off) }
     private val loadingError by lazy { getString(R.string.loading_error) }
 
-    private val itemTouchHelper by lazy {
-        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
-            0,
-            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
-        ) {
-
-            override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder,
-            ): Boolean = false
-
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                viewModel.changeFavouriteStatus(filmsAdapter.currentList[viewHolder.adapterPosition])
-            }
-        })
-    }
-
     private var currentScreenType = ScreenType.POPULAR
 
     @Inject
@@ -86,6 +68,23 @@ class PopularFilmsFragment : Fragment() {
         needRestore = false,
         openDetails = false
     )
+
+    private val itemTouchHelper by lazy {
+        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+            0,
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder,
+            ): Boolean = false
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                viewModel.changeFavouriteStatus(filmsAdapter.currentList[viewHolder.adapterPosition])
+            }
+        })
+    }
 
     private lateinit var fragmentSendDataListener: OnFragmentSavedPositionListener
     override fun onAttach(context: Context) {
@@ -269,14 +268,13 @@ class PopularFilmsFragment : Fragment() {
         Toast.makeText(requireContext(), "$loadingError: ${it.error}", Toast.LENGTH_LONG).show()
     }
 
-    private fun getFirstVisiblePosition(): Int {
-        return if (binding.recyclerViewList.layoutManager is LinearLayoutManager) {
+    private fun getFirstVisiblePosition(): Int =
+        if (binding.recyclerViewList.layoutManager is LinearLayoutManager) {
             (binding.recyclerViewList.layoutManager as LinearLayoutManager)
                 .findFirstVisibleItemPosition()
         } else {
             DEFAULT_VISIBLE_POSITION
         }
-    }
 
     private fun isOnePanelMode(): Boolean = binding.textViewDescription == null
     private fun parseArguments() = getSavedPositionFromBundle(requireArguments())
