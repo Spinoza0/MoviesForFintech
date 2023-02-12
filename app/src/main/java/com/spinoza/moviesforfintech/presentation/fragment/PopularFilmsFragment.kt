@@ -200,10 +200,15 @@ class PopularFilmsFragment : Fragment() {
         }
     }
 
-    private fun saveRecyclerViewPosition(savedPosition: SavedPosition): SavedPosition {
-        savedPosition.needRestore = true
-        savedPosition.position = getFirstVisiblePosition()
-        return savedPosition
+    private fun saveRecyclerViewPosition(savedPosition: SavedPosition) = savedPosition.apply {
+        val position = getFirstVisiblePosition()
+        if (position != -1) {
+            this.needRestore = true
+            this.position = position
+        } else {
+            this.needRestore = false
+            this.position = DEFAULT_VISIBLE_POSITION
+        }
     }
 
     private fun restoreScreenSavedPosition(source: SavedPosition, target: SavedPosition) {
@@ -212,7 +217,7 @@ class PopularFilmsFragment : Fragment() {
     }
 
     private fun switchSourceTo(target: ScreenType) {
-        val savedPosition = when (target) {
+        when (target) {
             ScreenType.POPULAR -> {
                 saveRecyclerViewPosition(favouriteScreenSavedPosition)
             }
@@ -220,17 +225,20 @@ class PopularFilmsFragment : Fragment() {
                 saveRecyclerViewPosition(popularScreenSavedPosition)
             }
         }
-        fragmentSendDataListener.savePosition(savedPosition)
         viewModel.switchSourceTo(target)
     }
 
-    private fun saveScreenPosition(target: ScreenType) = when (target) {
-        ScreenType.POPULAR -> {
-            saveRecyclerViewPosition(popularScreenSavedPosition)
-        }
-        else -> {
-            saveRecyclerViewPosition(favouriteScreenSavedPosition)
-        }
+    private fun saveScreenPosition(openDetails: Boolean): SavedPosition {
+        val savedPosition = when (currentScreenType) {
+            ScreenType.POPULAR -> {
+                saveRecyclerViewPosition(popularScreenSavedPosition)
+            }
+            else -> {
+                saveRecyclerViewPosition(favouriteScreenSavedPosition)
+            }
+        }.copy(screenType = currentScreenType, openDetails = openDetails)
+        fragmentSendDataListener.savePosition(savedPosition)
+        return savedPosition
     }
 
     private fun setButtonOff(textView: TextView) {
@@ -249,9 +257,7 @@ class PopularFilmsFragment : Fragment() {
 
     private fun showFileInfo(film: Film) {
         if (isOnePanelMode()) {
-            val savedPosition = saveScreenPosition(currentScreenType)
-            savedPosition.openDetails = true
-            fragmentSendDataListener.savePosition(savedPosition)
+            val savedPosition = saveScreenPosition(true)
             requireActivity().supportFragmentManager.beginTransaction()
                 .replace(
                     R.id.fragmentContainer,
@@ -302,6 +308,6 @@ class PopularFilmsFragment : Fragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        fragmentSendDataListener.savePosition(saveScreenPosition(currentScreenType))
+        saveScreenPosition(false)
     }
 }
