@@ -31,6 +31,10 @@ class FilmsRepositoryImpl @Inject constructor(
     override fun getIsLoading(): LiveData<Boolean> = isLoading
 
     override suspend fun loadAllFilms() {
+        loadAllFilms(true)
+    }
+
+    private suspend fun loadAllFilms(copyOldData: Boolean) {
         if (screenType == ScreenType.WITHOUT_TYPE) {
             switchSourceTo(ScreenType.POPULAR)
         } else if (isLoading.value == false) {
@@ -47,7 +51,11 @@ class FilmsRepositoryImpl @Inject constructor(
                     }
                     page++
                     val newFilms = mutableListOf<Film>()
-                    allFilmsResponse.value?.let { newFilms.addAll(it.films) }
+                    allFilmsResponse.value?.let {
+                        if (copyOldData) {
+                            newFilms.addAll(it.films)
+                        }
+                    }
                     newFilms.addAll(newResponse.films)
                     allFilmsResponse.value =
                         newResponse.copy(error = newResponse.error, films = newFilms)
@@ -126,16 +134,16 @@ class FilmsRepositoryImpl @Inject constructor(
         if (target != screenType && target != ScreenType.WITHOUT_TYPE) {
             screenType = target
             if (screenType == ScreenType.POPULAR) {
-
                 if (allPopularFilms.size > 0) {
                     val newFilms = mutableListOf<Film>()
                     newFilms.addAll(allPopularFilms)
                     allFilmsResponse.value = FilmResponse("", newFilms)
                 } else {
-                    loadAllFilms()
+                    loadAllFilms(false)
                 }
             } else {
                 allFilmsResponse.value?.let {
+                    allPopularFilms.clear()
                     allPopularFilms.addAll(it.films)
                 }
                 allFavouriteFilms = mapper.mapDbModelToEntity(filmsDao.getAllFavouriteFilms())
