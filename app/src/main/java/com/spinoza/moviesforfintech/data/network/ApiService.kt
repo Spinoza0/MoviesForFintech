@@ -2,17 +2,18 @@ package com.spinoza.moviesforfintech.data.network
 
 import com.spinoza.moviesforfintech.data.network.model.FilmDescriptionDto
 import com.spinoza.moviesforfintech.data.network.model.ResponseDto
+import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiService {
 
     @Headers("X-API-KEY: $API_KEY", "Cache-Control: max-age=$CACHE_MAX_AGE_SECONDS")
     @GET("top?type=TOP_100_POPULAR_FILMS")
-    suspend fun getTopPopularFilms(@Query(QUERY_PARAM_PAGE) page: Int): ResponseDto
+    suspend fun getTopPopularFilms(@Query(QUERY_PARAM_PAGE) page: Int): Response<ResponseDto>
 
     @Headers("X-API-KEY: $API_KEY", "Cache-Control: max-age=$CACHE_MAX_AGE_SECONDS")
     @GET("{$QUERY_PATH_ID}")
-    suspend fun getFilmDescription(@Path(QUERY_PATH_ID) id: Int): FilmDescriptionDto
+    suspend fun getFilmDescription(@Path(QUERY_PATH_ID) id: Int): Response<FilmDescriptionDto>
 
     companion object {
         private const val QUERY_PARAM_PAGE = "page"

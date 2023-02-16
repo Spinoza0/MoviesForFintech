@@ -11,18 +11,14 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class PopularFilmsViewModel @Inject constructor(
-    getAllFilmsUseCase: GetAllFilmsUseCase,
-    getOneFilmUseCase: GetOneFilmUseCase,
-    getIsLoadingUseCase: GetIsLoadingUseCase,
+    getStateUseCase: GetStateUseCase,
     private var loadAllFilmsUseCase: LoadAllFilmsUseCase,
     private var loadOneFilmUseCase: LoadOneFilmUseCase,
     private var changeFavouriteStatusUseCase: ChangeFavouriteStatusUseCase,
     private var switchSourceToUseCase: SwitchSourceToUseCase,
 ) : ViewModel() {
 
-    val allFilmsResponse = getAllFilmsUseCase()
-    val oneFilmResponse = getOneFilmUseCase()
-    val isLoading = getIsLoadingUseCase()
+    val state = getStateUseCase()
 
     private val _screenType = MutableLiveData<ScreenType>()
     val screenType: LiveData<ScreenType>

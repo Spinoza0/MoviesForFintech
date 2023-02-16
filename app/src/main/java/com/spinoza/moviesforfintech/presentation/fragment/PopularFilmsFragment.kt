@@ -19,7 +19,7 @@ import com.spinoza.moviesforfintech.R
 import com.spinoza.moviesforfintech.databinding.FragmentFilmsListBinding
 import com.spinoza.moviesforfintech.di.DaggerApplicationComponent
 import com.spinoza.moviesforfintech.domain.model.Film
-import com.spinoza.moviesforfintech.domain.model.FilmResponse
+import com.spinoza.moviesforfintech.domain.model.FilmsState
 import com.spinoza.moviesforfintech.domain.repository.ScreenType
 import com.spinoza.moviesforfintech.presentation.activity.OnFragmentSavedPositionListener
 import com.spinoza.moviesforfintech.presentation.adapter.FilmsListAdapter
@@ -137,32 +137,29 @@ class PopularFilmsFragment : Fragment() {
 
     private fun setupObservers() {
         with(binding) {
-            viewModel.isLoading.observe(viewLifecycleOwner) {
-                progressBar.visibility = if (it) VISIBLE else GONE
-            }
-            viewModel.allFilmsResponse.observe(viewLifecycleOwner) {
-                if (it.error.isNotEmpty()) {
-                    showError(it)
-                } else {
-                    filmsAdapter.submitList(it.films) {
-                        when (currentScreenType) {
-                            ScreenType.POPULAR -> {
-                                restoreRecyclerViewPosition(popularScreenSavedPosition)
-                            }
-                            else -> {
-                                restoreRecyclerViewPosition(favouriteScreenSavedPosition)
+            viewModel.state.observe(viewLifecycleOwner) {
+                if (it !is FilmsState.Loading) {
+                    progressBar.visibility = GONE
+                }
+                when (it) {
+                    is FilmsState.Loading -> progressBar.visibility = VISIBLE
+                    is FilmsState.Error -> showError(it.value)
+                    is FilmsState.AllFilms -> {
+                        filmsAdapter.submitList(it.value) {
+                            when (currentScreenType) {
+                                ScreenType.POPULAR -> {
+                                    restoreRecyclerViewPosition(popularScreenSavedPosition)
+                                }
+                                else -> {
+                                    restoreRecyclerViewPosition(favouriteScreenSavedPosition)
+                                }
                             }
                         }
                     }
+                    is FilmsState.OneFilm -> showFileInfo(it.value)
                 }
             }
-            viewModel.oneFilmResponse.observe(viewLifecycleOwner) {
-                if (it.error.isNotEmpty()) {
-                    showError(it)
-                } else {
-                    showFileInfo(it.films[0])
-                }
-            }
+
             viewModel.screenType.observe(viewLifecycleOwner) {
                 currentScreenType = it
                 when (it) {
@@ -271,8 +268,8 @@ class PopularFilmsFragment : Fragment() {
         }
     }
 
-    private fun showError(it: FilmResponse) {
-        Toast.makeText(requireContext(), "$loadingError: ${it.error}", Toast.LENGTH_LONG).show()
+    private fun showError(error: String) {
+        Toast.makeText(requireContext(), "$loadingError: $error", Toast.LENGTH_LONG).show()
     }
 
     private fun getFirstVisiblePosition(): Int =
