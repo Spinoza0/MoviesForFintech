@@ -3,9 +3,11 @@ package com.spinoza.moviesforfintech.data.mapper
 import com.spinoza.moviesforfintech.data.database.DbConstants
 import com.spinoza.moviesforfintech.data.database.FilmsDao
 import com.spinoza.moviesforfintech.data.database.model.FilmDbModel
-import com.spinoza.moviesforfintech.data.network.model.*
+import com.spinoza.moviesforfintech.data.network.model.CountryDto
+import com.spinoza.moviesforfintech.data.network.model.FilmDescriptionDto
+import com.spinoza.moviesforfintech.data.network.model.FilmDto
+import com.spinoza.moviesforfintech.data.network.model.GenreDto
 import com.spinoza.moviesforfintech.domain.model.Film
-import com.spinoza.moviesforfintech.domain.model.FilmResponse
 import java.util.stream.Collectors
 import javax.inject.Inject
 
@@ -74,11 +76,8 @@ class FilmsMapper @Inject constructor(private val filmsDao: FilmsDao) {
         )
     }
 
-    suspend fun mapDtoToEntity(responseDto: ResponseDto): FilmResponse {
-        val films = mutableListOf<Film>()
-        responseDto.films?.forEach { films.add(mapDtoToEntity(it)) }
-        return FilmResponse("", films)
-    }
+    suspend fun mapDtoToEntity(filmsDto: List<FilmDto>): List<Film> =
+        filmsDto.map { mapDtoToEntity(it) }
 
     private fun genresDtoToString(genresDto: List<GenreDto>?): String {
         val genres = mutableListOf<String>()

@@ -5,17 +5,20 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.spinoza.moviesforfintech.domain.model.Film
-import com.spinoza.moviesforfintech.domain.repository.FilmsRepository
 import com.spinoza.moviesforfintech.domain.repository.ScreenType
+import com.spinoza.moviesforfintech.domain.usecase.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class PopularFilmsViewModel @Inject constructor(private val repository: FilmsRepository) :
-    ViewModel() {
+class PopularFilmsViewModel @Inject constructor(
+    getStateUseCase: GetStateUseCase,
+    private var loadAllFilmsUseCase: LoadAllFilmsUseCase,
+    private var loadOneFilmUseCase: LoadOneFilmUseCase,
+    private var changeFavouriteStatusUseCase: ChangeFavouriteStatusUseCase,
+    private var switchSourceToUseCase: SwitchSourceToUseCase,
+) : ViewModel() {
 
-    val allFilmsResponse = repository.getAllFilms()
-    val oneFilmResponse = repository.getOneFilm()
-    val isLoading = repository.getIsLoading()
+    val state = getStateUseCase()
 
     private val _screenType = MutableLiveData<ScreenType>()
     val screenType: LiveData<ScreenType>
@@ -27,25 +30,25 @@ class PopularFilmsViewModel @Inject constructor(private val repository: FilmsRep
 
     fun loadAllFilms() {
         viewModelScope.launch {
-            repository.loadAllFilms()
+            loadAllFilmsUseCase()
         }
     }
 
     fun loadFullFilmData(filmId: Int) {
         viewModelScope.launch {
-            repository.loadOneFilm(filmId)
+            loadOneFilmUseCase(filmId)
         }
     }
 
     fun changeFavouriteStatus(film: Film) {
         viewModelScope.launch {
-            repository.changeFavouriteStatus(film)
+            changeFavouriteStatusUseCase(film)
         }
     }
 
     fun switchSourceTo(target: ScreenType) {
         viewModelScope.launch {
-            repository.switchSourceTo(target)
+            switchSourceToUseCase(target)
         }
         _screenType.value = target
     }
